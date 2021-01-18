@@ -2,6 +2,7 @@
 #pragma once
 
 #include "../header/Game.h"
+#include <iostream>
 
 Game::Game()
 {
@@ -13,11 +14,16 @@ Game::Game()
 Game::~Game()
 {
     delete this->window;
+    for (auto texture : this->textures)
+    {
+        delete texture.second;
+    }
 }
 
 void Game::initVariables()
 {
     this->background.setTexture(*this->textures["BOARD"]);
+    this->endgame = false;
 }
 
 void Game::initWindow()
@@ -49,6 +55,7 @@ void Game::render()
 {
     this->window->clear();
     this->window->draw(this->background);
+    this->board.renderBoard(*this->window);
     this->window->display();
 }
 
@@ -56,10 +63,17 @@ void Game::pollEvents()
 {
     while (this->window->pollEvent(this->event))
     {
-        sf::Event::EventType type = this->event.type;
-        if (type == sf::Event::Closed)
+        if (this->event.type == sf::Event::Closed)
         {
             this->window->close();
+        }
+        else if(this->event.type == sf::Event::MouseButtonPressed)
+        {
+            this->handleTurns();
+            if(board.isWinner())
+            {
+                endgame = true;
+            }
         }
     }
 }
@@ -75,9 +89,20 @@ void Game::loadTexture()
 
 void Game::run()
 {
-    while (this->isOpen())
+    while (this->isOpen() &&!this->endgame)
     {
         this->update();
         this->render();
+    }
+}
+
+void Game::handleTurns()
+{
+    auto mouseData = sf::Mouse::getPosition(*this->window);
+    int row = Board::clickToPos(mouseData.x);
+    int column = Board::clickToPos(mouseData.y);
+    if (board.isEmpty(row, column))
+    {
+        this->board.setPiece(row, column, Players::CAPITAL_O); 
     }
 }

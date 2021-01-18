@@ -1,21 +1,31 @@
 
 #pragma once
 
-enum class Players
-{
-    CAPITAL_O = 1,
-    CAPITAL_X = 2
-};
-
+#include <unordered_map>
+#include <tuple>
+#include <SFML/Graphics.hpp>
+#include <SFML/Window.hpp>
+#include <SFML/Network.hpp>
+#include <string>
 #include <array>
+#include "../source/O_X.cpp"
+#include <algorithm>
+
+#define SIDE 3
 
 class Board
 {
 public:
+    Board();
+    ~Board();
     bool isWinner() const;
-    bool isLegal(int, int) const;
-    void move(int, int, Players);
-
+    void loadTexture();
+    void renderBoard(sf::RenderTarget &window);
+    bool isEmpty(int row, int pos) const;
+    void setPiece(int row, int column, Players player = Players::CAPITAL_O);
+    static int clickToPos(double);
 private:
-    std::array<std::array<int, 3>, 3> boardArr;
+    void initBoard();
+    std::array<std::array<O_X *, 3>, 3> boardArr;
+    std::map<std::string, sf::Texture *> textures;
 };

@@ -8,6 +8,9 @@
 #include <SFML/Window.hpp>
 #include <SFML/Network.hpp>
 #include <string>
+//-----------------------
+#include "../source/O_X.cpp"
+#include "../source/Board.cpp"
 
 class Game
 {
@@ -20,6 +23,8 @@ public:
     bool isOpen() const;
 
     void run();
+    int clickToPos(double) const;
+    void handleTurns();
 private:
     std::map<std::string, sf::Texture *> textures;
     sf::RenderWindow *window;
@@ -28,6 +33,9 @@ private:
     sf::Text uiText;
     sf::VideoMode videoMode;
     sf::Sprite background;
+
+    Board board;
+    bool endgame;
     
     void initVariables();
     void initWindow();
