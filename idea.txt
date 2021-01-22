@@ -1,0 +1,28 @@
+    std::pair<int, int> src = std::make_pair(2, 3);
+    std::stringstream buffer;
+    msgpack::pack(buffer, src);
+
+    // send the buffer ...
+    buffer.seekg(0);
+
+    // deserialize the buffer into msgpack::object instance.
+    std::string str(buffer.str());
+
+    msgpack::object_handle oh1 =
+        msgpack::unpack(str.data(), str.size());
+
+    // deserialized object is valid during the msgpack::object_handle instance is alive.
+    msgpack::object deserialized = oh1.get();
+
+    // msgpack::object supports ostream.
+    std::cout << deserialized << std::endl;
+
+    // convert msgpack::object instance into the original type.
+    // if the type is mismatched, it throws msgpack::type_error exception.
+    std::pair<int,int> dst;
+    deserialized.convert(dst);
+
+    // or create the new instance
+    std::pair<int,int> dst2 =
+        deserialized.as<std::pair<int,int>>(); //NOTE
+    std::cout << dst2.first << " " << dst2.second << "\n";

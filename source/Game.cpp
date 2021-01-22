@@ -22,8 +22,12 @@ Game::~Game()
 
 void Game::initVariables()
 {
+    this->sent = false;
     this->background.setTexture(*this->textures["BOARD"]);
     this->endgame = false;
+    //this->netHandle.init();
+    this->lastPos = std::make_pair(0, 0);
+    this->moved = false;
 }
 
 void Game::initWindow()
@@ -49,6 +53,33 @@ bool Game::isOpen() const
 void Game::update()
 {
     this->pollEvents();
+    if (this->moved)
+    {
+        //std::cout << "moved\n";istttt
+        if (!this->sent)
+        {
+            std::cout << "send move\n";
+            this->netHandle.sendMsg(std::make_pair(2,
+                                                   2)); //FIXME -idk why by it goes crash lastpos
+            this->sent = true;
+            this->moved = false;
+            std::cout << "test" << std::endl;
+        }
+    }
+    else if (!this->moved)
+    {
+        //std::cout << "wating" << std::endl;
+        if (this->netHandle.getFullyRecive())
+        {
+            std::cout << "get message: " << std::endl;
+            netHandle.setFullyRecive(false);
+            this->sent = false;
+        }
+    }
+    else
+    {
+        std::cout << "ERROR" << std::endl;
+    }
 }
 
 void Game::render()
@@ -67,10 +98,10 @@ void Game::pollEvents()
         {
             this->window->close();
         }
-        else if(this->event.type == sf::Event::MouseButtonPressed)
+        else if (this->event.type == sf::Event::MouseButtonPressed)
         {
             this->handleTurns();
-            if(board.isWinner())
+            if (board.isWinner())
             {
                 endgame = true;
             }
@@ -89,7 +120,8 @@ void Game::loadTexture()
 
 void Game::run()
 {
-    while (this->isOpen() &&!this->endgame)
+
+    while (this->isOpen() && !this->endgame)
     {
         this->update();
         this->render();
@@ -103,6 +135,8 @@ void Game::handleTurns()
     int column = Board::clickToPos(mouseData.y);
     if (board.isEmpty(row, column))
     {
-        this->board.setPiece(row, column, Players::CAPITAL_O); 
+        this->board.setPiece(row, column, Players::CAPITAL_O);
+        //this->lastPos = std::make_pair(row, column);
+        this->moved = true;
     }
 }
