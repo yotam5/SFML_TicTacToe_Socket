@@ -6,7 +6,6 @@
 Board::Board()
 {
     this->initBoard();
-    this->setPiece(0, 0);
 }
 
 Board::~Board()

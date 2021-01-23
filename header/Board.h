@@ -2,7 +2,6 @@
 #pragma once
 
 #include <unordered_map>
-#include <tuple>
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include <SFML/Network.hpp>

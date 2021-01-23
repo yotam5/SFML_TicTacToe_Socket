@@ -14,12 +14,10 @@
 #include "../source/Board.cpp"
 #include "../source/NetHelper.cpp"
 
-#define PORT 2001
-
 class Game
 {
 public:
-    Game();
+    Game(char = 'o');
 
     virtual ~Game();
 
@@ -31,7 +29,6 @@ public:
     int clickToPos(double) const;
     void handleTurns();
 
-
 private:
     std::map<std::string, sf::Texture *> textures;
     sf::RenderWindow *window;
@@ -40,14 +37,16 @@ private:
     sf::Text uiText;
     sf::VideoMode videoMode;
     sf::Sprite background;
-    
+    sf::Packet packet;
+
     Board board;
-    bool endgame;
-    bool moved;
-    std::pair<int,int> lastPos;
-    Players player; //FIXME
+    std::pair<int, int> lastPos;
+    Players player; 
     NetHelper netHandle;
     bool sent;
+    bool endgame;
+    bool moved;
+
     void initVariables();
     void initWindow();
     void loadTexture();

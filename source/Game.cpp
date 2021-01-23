@@ -1,11 +1,24 @@
 
 #pragma once
 
+/*
+NOTE:
+    msgpack cant send c_str() that represent a zero(cuz it null probably),
+    the solution is to use sf::Packet that can have the origianl string value
+    in the name of god it took long time to find this
+*/
+
 #include "../header/Game.h"
 #include <iostream>
 
-Game::Game()
+Game::Game(char whatPlayer)
 {
+    if (whatPlayer != 'o' && whatPlayer != 'x')
+    {
+        std::cout << "wrong usage" << std::endl;
+        exit(1);
+    }
+    this->player = (whatPlayer == 'o') ? Players::CAPITAL_O : Players::CAPITAL_X;
     this->loadTexture();
     this->initVariables();
     this->initWindow();
@@ -25,8 +38,7 @@ void Game::initVariables()
     this->sent = false;
     this->background.setTexture(*this->textures["BOARD"]);
     this->endgame = false;
-    //this->netHandle.init();
-    this->lastPos = std::make_pair(0, 0);
+    this->lastPos = std::make_pair(1, 1);
     this->moved = false;
 }
 
@@ -58,27 +70,24 @@ void Game::update()
         //std::cout << "moved\n";istttt
         if (!this->sent)
         {
-            std::cout << "send move\n";
-            this->netHandle.sendMsg(std::make_pair(2,
-                                                   2)); //FIXME -idk why by it goes crash lastpos
+            this->netHandle.sendMsg<std::pair<int, int>>(this->lastPos);
             this->sent = true;
             this->moved = false;
-            std::cout << "test" << std::endl;
         }
     }
     else if (!this->moved)
     {
-        //std::cout << "wating" << std::endl;
         if (this->netHandle.getFullyRecive())
         {
-            std::cout << "get message: " << std::endl;
+            auto msgCopy = this->netHandle.getMsgCopy();
+            auto oh1 = msgpack::unpack(msgCopy.data(), msgCopy.size());
+            msgpack::object deserialized = oh1.get();
+            std::pair<int,int> strtest = deserialized.as<std::pair<int,int>>();
+            this->board.setPiece(strtest.first, strtest.second,
+                                 (this->player == Players::CAPITAL_O) ? Players::CAPITAL_X : Players::CAPITAL_O);
             netHandle.setFullyRecive(false);
             this->sent = false;
         }
-    }
-    else
-    {
-        std::cout << "ERROR" << std::endl;
     }
 }
 
@@ -98,7 +107,7 @@ void Game::pollEvents()
         {
             this->window->close();
         }
-        else if (this->event.type == sf::Event::MouseButtonPressed)
+        else if (this->event.type == sf::Event::MouseButtonPressed && !sent)
         {
             this->handleTurns();
             if (board.isWinner())
@@ -135,8 +144,9 @@ void Game::handleTurns()
     int column = Board::clickToPos(mouseData.y);
     if (board.isEmpty(row, column))
     {
-        this->board.setPiece(row, column, Players::CAPITAL_O);
-        //this->lastPos = std::make_pair(row, column);
+        this->board.setPiece(row, column, this->player);
         this->moved = true;
+        this->lastPos.first = row;
+        this->lastPos.second = column;
     }
 }

@@ -8,36 +8,30 @@
 #include <pthread.h>
 
 //NOTE: WORKS
-#define PORT 2001
+#define PORT 2002
 
 class NetHelper
 {
 public:
     NetHelper()
-    {
+    { //NOTE: EXEXTURE BEFORE INITALIZE GAME
         std::cout << "Enter s for server, c for client:" << std::endl;
         std::cin >> connectionType;
         this->init();
         threadPointer = new std::thread(&NetHelper::getMsg<std::pair<int, int>>, this);
     }
     ~NetHelper() { delete this->threadPointer; }
-    void run()
-    {
-        //this->getMsg();
-        this->sendMsg(std::make_pair(5, 5));
-    }
 
     template <typename T>
     void sendMsg(T value)
     {
         std::cout << "sending " << value.first << value.second << std::endl;
         std::stringstream buffer1;
-        //if (mode == 's')
-        //{
         msgpack::pack(buffer1, value);
-        socket.send(buffer1.str().c_str(), buffer1.str().length() + 1);
-        //mode = 'r';
-        //}
+        std::string strValue = buffer1.str();
+        sf::Packet packet;
+        packet << strValue;
+        socket.send(packet);
     }
 
     template <typename T>
@@ -45,41 +39,22 @@ public:
     {
         while (true)
         {
-            //if (mode == 'r')
-            //{
-            socket.receive(buffer, sizeof(buffer), recived);
-            //std::cout << recived;
-            if (recived > 0)
+            if (socket.receive(this->packet) == sf::TcpSocket::Done)
             {
                 this->fullyRecive = true;
                 msgpack::object_handle oh1;
-                std::string str(buffer);
-                try
-                {
-                    oh1 =
-                        msgpack::unpack(str.data(), str.size());
-                    std::cout << str.c_str() << std::endl;
-                }
-                catch (...)
-                {
-                    //oh1 = msgpack.unpack(str.data(), str.size());
-                    std::cout << str.c_str() << "error" << std::endl;
-                }
-                msgpack::object deserialized = oh1.get();
-                this->deserializedCopy = deserialized;
-                std::pair<int, int> strtest;
-                deserialized.convert(strtest);
-                std::cout << "before print recived" << std::endl;
+                std::string str;
+                this->packet >> str;
+                this->lastData = str;
+                T strtest = this->convertTo<T>(str);
                 std::cout << "received " << strtest.first << strtest.second << std::endl;
-                //mode = 's';
-                //return std::make_pair(true, deserialized);
             }
         }
     }
     //return std::make_pair(false, msgpack::object(NULL));
-    msgpack::object getMsgCopy() const
+    std::string getMsgCopy() const
     {
-        return this->deserializedCopy;
+        return this->lastData;
     }
 
     bool getFullyRecive() const
@@ -92,16 +67,24 @@ public:
         this->fullyRecive = value;
     }
 
+    template <typename T>
+    T convertTo(std::string str) const
+    {
+        auto oh1 = msgpack::unpack(str.data(), str.size());
+        msgpack::object deserialized = oh1.get();
+        T tmp = deserialized.as<T>();
+        return tmp;
+    }
+
 private:
     std::thread *threadPointer = nullptr;
     sf::IpAddress ip = sf::IpAddress::getLocalAddress();
     sf::TcpSocket socket;
     char connectionType, mode;
-    char buffer[2000];
+    sf::Packet packet;
     bool fullyRecive = false;
-    std::size_t recived;
     std::string text = "connected";
-    msgpack::object deserializedCopy;
+    std::string lastData;
     void init()
     {
         if (connectionType == 's')
@@ -114,7 +97,5 @@ private:
         {
             socket.connect(ip, PORT);
         }
-        //socket.send(text.c_str(), text.length() + 1);
-        //socket.receive(buffer, sizeof(buffer), recived);
     }
 };
