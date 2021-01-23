@@ -40,6 +40,7 @@ void Game::initVariables()
     this->endgame = false;
     this->lastPos = std::make_pair(1, 1);
     this->moved = false;
+    this->moveCounter = 0;
 }
 
 void Game::initWindow()
@@ -62,12 +63,24 @@ bool Game::isOpen() const
     return this->window->isOpen();
 }
 
+bool Game::isTie()
+{
+    if(this->moveCounter == 9)
+    {
+        if(!this->board.isWinner())
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 void Game::update()
 {
     this->pollEvents();
     if (this->moved)
     {
-        //std::cout << "moved\n";istttt
+        this->moveCounter++;
         if (!this->sent)
         {
             this->netHandle.sendMsg<std::pair<int, int>>(this->lastPos);
@@ -79,14 +92,17 @@ void Game::update()
     {
         if (this->netHandle.getFullyRecive())
         {
+            this->moveCounter++;
             auto msgCopy = this->netHandle.getMsgCopy();
-            auto oh1 = msgpack::unpack(msgCopy.data(), msgCopy.size());
-            msgpack::object deserialized = oh1.get();
-            std::pair<int,int> strtest = deserialized.as<std::pair<int,int>>();
+            auto strtest = this->netHandle.convertTo<std::pair<int, int>>(msgCopy);
             this->board.setPiece(strtest.first, strtest.second,
                                  (this->player == Players::CAPITAL_O) ? Players::CAPITAL_X : Players::CAPITAL_O);
             netHandle.setFullyRecive(false);
             this->sent = false;
+            if (board.isWinner())
+            {
+                endgame = true;
+            }
         }
     }
 }
@@ -129,12 +145,13 @@ void Game::loadTexture()
 
 void Game::run()
 {
-
     while (this->isOpen() && !this->endgame)
     {
         this->update();
         this->render();
     }
+
+    sleep(10);
 }
 
 void Game::handleTurns()

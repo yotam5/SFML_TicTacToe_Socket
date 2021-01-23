@@ -25,7 +25,6 @@ public:
     template <typename T>
     void sendMsg(T value)
     {
-        std::cout << "sending " << value.first << value.second << std::endl;
         std::stringstream buffer1;
         msgpack::pack(buffer1, value);
         std::string strValue = buffer1.str();
@@ -46,8 +45,6 @@ public:
                 std::string str;
                 this->packet >> str;
                 this->lastData = str;
-                T strtest = this->convertTo<T>(str);
-                std::cout << "received " << strtest.first << strtest.second << std::endl;
             }
         }
     }
@@ -68,7 +65,7 @@ public:
     }
 
     template <typename T>
-    T convertTo(std::string str) const
+    T convertTo(std::string str)
     {
         auto oh1 = msgpack::unpack(str.data(), str.size());
         msgpack::object deserialized = oh1.get();

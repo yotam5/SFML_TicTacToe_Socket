@@ -9,6 +9,7 @@
 #include <SFML/Network.hpp>
 #include <msgpack.hpp>
 #include <string>
+#include <unistd.h>
 //-----------------------
 #include "../source/O_X.cpp"
 #include "../source/Board.cpp"
@@ -41,12 +42,14 @@ private:
 
     Board board;
     std::pair<int, int> lastPos;
-    Players player; 
+    Players player;
     NetHelper netHandle;
     bool sent;
     bool endgame;
     bool moved;
+    int moveCounter;
 
+    bool isTie();
     void initVariables();
     void initWindow();
     void loadTexture();

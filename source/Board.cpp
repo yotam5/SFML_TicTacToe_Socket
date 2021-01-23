@@ -10,10 +10,6 @@ Board::Board()
 
 Board::~Board()
 {
-    for (auto texture : this->textures)
-    {
-        delete texture.second;
-    }
     for (int i = 0; i < SIDE; ++i)
     {
         for (int k = 0; k < SIDE; ++k)
@@ -23,39 +19,49 @@ Board::~Board()
     }
 }
 
-bool Board::isWinner() const
+bool Board::isWinner()
 {
-    int row;
-    int column;
-    int count = 0;
+    int row = 0;
+    int column = 0;
 
     bool mode = true; //up down
+
     for (int i = 0; i < 2; i++)
     {
+        std::cout << "ERRO" << std::endl;
         for (row = 0; row < 3; row++)
         {
             int counter = 0;
             if (this->boardArr[(mode) ? row : column][0] == nullptr)
             {
+                this->winnerPoses.clear();
                 continue;
             }
+            std::cout << "ERRO1" << std::endl;
+
             Players tmp = this->boardArr[row][0]->getType();
             for (column = 0; column < 3; column++)
             {
                 if (this->boardArr[(mode) ? row : column][(mode) ? column : row] == nullptr ||
                     this->boardArr[(mode) ? row : column][(mode) ? column : row]->getType() != tmp)
                 {
+                    this->winnerPoses.clear();
                     break;
                 }
+                this->winnerPoses.push_back(std::make_pair(row, column));
                 counter++;
             }
             if (counter == 3)
             {
                 return true;
             }
+            std::cout << "yap " << std::endl;
         }
         mode = false; //right left
     }
+    std::cout << "ERRO3" << std::endl;
+
+    int count = 0;
     std::array<std::pair<int, int>, 3> op1 = {std::make_pair(1, 1), std::make_pair(0, 0), std::make_pair(2, 2)};
     std::array<std::pair<int, int>, 3> op2 = {std::make_pair(1, 1), std::make_pair(2, 0), std::make_pair(0, 2)};
     auto combine = {op1, op2};
@@ -69,15 +75,17 @@ bool Board::isWinner() const
         int count = 0;
         for (auto p : op)
         {
-            if(this->boardArr[p.first][p.second] != nullptr
-                && this->boardArr[p.first][p.second]->getType() == middle->getType())
+            if (this->boardArr[p.first][p.second] != nullptr && this->boardArr[p.first][p.second]->getType() == middle->getType())
             {
+                this->winnerPoses.push_back(p);
                 count++;
                 continue;
             }
+            this->winnerPoses.clear();
             break;
         }
-        if(count == 3){
+        if (count == 3)
+        {
             return true;
         }
     }
@@ -106,10 +114,6 @@ void Board::setPiece(int row, int column, Players player)
     {
         this->boardArr[row][column] = new O_X(player, row, column);
     }
-}
-
-void Board::loadTexture()
-{
 }
 
 bool Board::isEmpty(int row, int column) const
