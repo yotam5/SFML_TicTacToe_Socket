@@ -4,6 +4,8 @@
 #include "../header/O_X.h"
 #include <iostream>
 
+#define REPOSITION 205 + 30
+
 std::array<sf::Texture *, 2> O_X::textures;
 bool O_X::init = false;
 
@@ -62,7 +64,7 @@ std::pair<int,int> O_X::getPos() const
 
 void O_X::changeScreenPos()
 {
-    auto p1 = this->pos.first * 205 + 30;
-    auto p2 = this->pos.second * 205 + 30;
+    auto p1 = this->pos.first * REPOSITION;
+    auto p2 = this->pos.second * REPOSITION;
     this->sprite.setPosition(p1, p2);
 }

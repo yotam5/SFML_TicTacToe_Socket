@@ -28,7 +28,6 @@ bool Board::isWinner()
 
     for (int i = 0; i < 2; i++)
     {
-        std::cout << "ERRO" << std::endl;
         for (row = 0; row < 3; row++)
         {
             int counter = 0;
@@ -37,9 +36,7 @@ bool Board::isWinner()
                 this->winnerPoses.clear();
                 continue;
             }
-            std::cout << "ERRO1" << std::endl;
-
-            Players tmp = this->boardArr[row][0]->getType();
+            Players tmp = this->boardArr[(mode) ? row : column][0]->getType();
             for (column = 0; column < 3; column++)
             {
                 if (this->boardArr[(mode) ? row : column][(mode) ? column : row] == nullptr ||
@@ -48,18 +45,16 @@ bool Board::isWinner()
                     this->winnerPoses.clear();
                     break;
                 }
-                this->winnerPoses.push_back(std::make_pair(row, column));
+                this->winnerPoses.push_back(std::make_pair((mode) ? row : column,mode ? column : row));
                 counter++;
             }
             if (counter == 3)
             {
                 return true;
             }
-            std::cout << "yap " << std::endl;
         }
         mode = false; //right left
     }
-    std::cout << "ERRO3" << std::endl;
 
     int count = 0;
     std::array<std::pair<int, int>, 3> op1 = {std::make_pair(1, 1), std::make_pair(0, 0), std::make_pair(2, 2)};
@@ -101,7 +96,7 @@ int Board::clickToPos(double value)
     }
     int key = (int)value;
     int loc = 0;
-    for (int i = 195; i < 600 && key >= i; i += 195)
+    for (int i = 195; i < 600 && key > i; i += 195)
     {
         ++loc;
     }
@@ -130,6 +125,11 @@ void Board::initBoard()
             this->boardArr[i][k] = nullptr;
         }
     }
+}
+
+std::vector<std::pair<int, int>> Board::getWinnerPoses() const
+{
+    return this->winnerPoses;
 }
 
 void Board::renderBoard(sf::RenderTarget &window)

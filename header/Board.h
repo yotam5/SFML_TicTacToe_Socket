@@ -23,7 +23,7 @@ public:
     bool isEmpty(int row, int pos) const;
     void setPiece(int row, int column, Players player = Players::CAPITAL_O);
     static int clickToPos(double);
-
+    std::vector<std::pair<int,int>> getWinnerPoses() const;
 private:
     void initBoard();
     std::array<std::array<O_X *, 3>, 3> boardArr;

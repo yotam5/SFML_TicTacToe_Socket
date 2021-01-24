@@ -7,14 +7,14 @@
 #include <thread>
 #include <pthread.h>
 
-//NOTE: WORKS
 #define PORT 2002
 
 class NetHelper
 {
 public:
     NetHelper()
-    { //NOTE: EXEXTURE BEFORE INITALIZE GAME
+    {  
+        //NOTE: EXEXTURE BEFORE INITALIZE GAME
         std::cout << "Enter s for server, c for client:" << std::endl;
         std::cin >> connectionType;
         this->init();

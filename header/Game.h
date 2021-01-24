@@ -3,6 +3,7 @@
 
 #define WIDTH 600
 #define HEIGHT 600
+#define IMG_SIZE 128
 
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
@@ -19,13 +20,9 @@ class Game
 {
 public:
     Game(char = 'o');
-
     virtual ~Game();
-
     void update();
-
     bool isOpen() const;
-
     void run();
     int clickToPos(double) const;
     void handleTurns();
@@ -44,10 +41,12 @@ private:
     std::pair<int, int> lastPos;
     Players player;
     NetHelper netHandle;
+
     bool sent;
     bool endgame;
     bool moved;
     int moveCounter;
+    bool winner;
 
     bool isTie();
     void initVariables();
@@ -55,4 +54,5 @@ private:
     void loadTexture();
     void pollEvents();
     void render();
+    void drawRectLine();
 };

@@ -35,6 +35,7 @@ Game::~Game()
 
 void Game::initVariables()
 {
+    this->winner = false;
     this->sent = false;
     this->background.setTexture(*this->textures["BOARD"]);
     this->endgame = false;
@@ -65,9 +66,9 @@ bool Game::isOpen() const
 
 bool Game::isTie()
 {
-    if(this->moveCounter == 9)
+    if (this->moveCounter == 9)
     {
-        if(!this->board.isWinner())
+        if (!this->board.isWinner())
         {
             return true;
         }
@@ -101,18 +102,15 @@ void Game::update()
             this->sent = false;
             if (board.isWinner())
             {
+                this->winner = true;
                 endgame = true;
             }
         }
     }
-}
-
-void Game::render()
-{
-    this->window->clear();
-    this->window->draw(this->background);
-    this->board.renderBoard(*this->window);
-    this->window->display();
+    if (this->moveCounter == 9)
+    {
+        this->endgame = true;
+    }
 }
 
 void Game::pollEvents()
@@ -129,6 +127,7 @@ void Game::pollEvents()
             if (board.isWinner())
             {
                 endgame = true;
+                this->winner = true;
             }
         }
     }
@@ -141,6 +140,11 @@ void Game::loadTexture()
     {
         throw std::invalid_argument("couldnt load board\n");
     }
+    this->textures["TIE"] = new sf::Texture;
+    if (!this->textures["TIE"]->loadFromFile("./asserts/tie.png"))
+    {
+        throw std::invalid_argument("couldnt load tie\n");
+    }
 }
 
 void Game::run()
@@ -150,8 +154,42 @@ void Game::run()
         this->update();
         this->render();
     }
+    std::cin.get(); //wait for key press
+    std::cin.get();
+}
 
-    sleep(10);
+void Game::render()
+{
+    this->window->clear();
+    this->window->draw(this->background);
+    this->board.renderBoard(*this->window);
+
+    if (this->endgame && this->winner)
+    {
+        this->drawRectLine();
+    }
+    else if (this->endgame && !this->winner)
+    {
+        sf::Sprite tmpTie;
+        tmpTie.setTexture(*this->textures["TIE"]);
+        tmpTie.setOrigin(WIDTH / 4, HEIGHT / 2);
+        this->window->draw(tmpTie);
+    }
+    this->window->display();
+}
+
+void Game::drawRectLine()
+{
+    sf::RectangleShape rect(sf::Vector2f(IMG_SIZE, IMG_SIZE));
+    rect.setFillColor(sf::Color(46, 139, 87, 60));
+    auto winnerPoses = this->board.getWinnerPoses();
+    for (auto pos : winnerPoses)
+    {
+        float x = pos.second * REPOSITION;
+        float y = pos.first * REPOSITION;
+        rect.setPosition(sf::Vector2f(y, x));
+        this->window->draw(rect);
+    }
 }
 
 void Game::handleTurns()
